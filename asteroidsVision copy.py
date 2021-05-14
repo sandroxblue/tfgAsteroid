@@ -444,18 +444,18 @@ while run:
                 ran = random.choice([1,1,1,1,2,2,3])
                 asteroids.append(Asteroid(ran))
 
-        playersList = pygame.sprite.Group()
-        for p in playersAlive:
-            playersList.add(p)
 
         for p in playersAlive:
             p.checkRadar(playersAlive,asteroids,playerBullets,barricades)
-            if (p.checkOffScreen()):
-                deadPlayers.append(p)
-                playersAlive.pop(playersAlive.index(p))
+            if p.x < 0:
+                p.x = WIDTH
+            if p.x > WIDTH + p.w:
+                p.x = 0
+            if p.y < 0:
+                p.y = HEIGHT
+            if p.y > HEIGHT:
+                p.y = 0
 
-            playersList.remove(p)
-            playersList.add(p)
             
             for b in playerBullets:
                 if b.x >= p.x and b.x <= p.x + p.w or b.x + b.w >= p.x and b.x + b.w <= p.x + p.w:
