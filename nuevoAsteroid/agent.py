@@ -2,17 +2,17 @@ import torch
 import random
 import numpy as np
 import pygame
+import matplotlib.pyplot as plt
 from collections import deque
-from asteroidsTraining import AsteroidAI
+from asteroid import AsteroidAI
 from model import Linear_QNet, QTrainer
-from helper import plot
 
 #el agente es el que juega al juego y aprende y tal
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LR = 0.001
-N_RANDOM_GAMES = 380
-RANDOM_PROB = 400
+LR = 0.01
+N_RANDOM_GAMES = 65
+RANDOM_PROB = 70
 
 class Agent:
 
@@ -21,12 +21,11 @@ class Agent:
         self.epsilon = 0 #random
         self.gamma = 0.75 #discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() cuando se llena la memoria
-        #self.model = Linear_QNet(30, 256, 256, 5)
-        self.model = Linear_QNet(15 * 5, 10, 10, 5)
+        self.model = Linear_QNet(15 * 3, 10, 15, 5)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
-    def get_state(self, game, number):
-        state = game.players[number].checkRadar(game.players,game.asteroids,game.playerBullets,game.barricades)
+    def get_state(self, game):
+        state = game.players[0].checkRadar(game.asteroids,game.bullets)
         return state
 
     def remember(self, state, action, reward, next_state, gameover):
@@ -46,7 +45,6 @@ class Agent:
     def get_action(self, state):
         # random moves: tradeoff between exploration / explotation
         self.epsilon = N_RANDOM_GAMES - self.n_games
-        #final_move = [0,0,0,0,0]
         final_move = [0,0,0,0,0]
         if random.randint(0, RANDOM_PROB) < self.epsilon:
             move = random.randint(0, 4)
@@ -67,68 +65,61 @@ def train():
     plot_mean_scores = []
     total_score = 0
     timeRecord = 0
-    agent1 = Agent()
-    agent2 = Agent()
-    agent3 = Agent()
-    agent4 = Agent()
-    agents = [agent1, agent2, agent3, agent4]
+    scoreRecord = 0
+    agent = Agent()
     game = AsteroidAI()
     run = True
     n_games = 0
-    #agent.model.load()
     while run:
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
 
-        oldStates = [None,None,None,None]
-        finalMoves = [None,None,None,None]
-        newStates = [None,None,None,None]
-        
-        for i in range(0,4):
+        oldState = agent.get_state(game)
+        #get move
+        finalMove = agent.get_action(oldState)
 
-            if game.players[i].alive == True:
-                #get current state
-                oldStates[i] = agents[i].get_state(game,i)
-                #get move
-                finalMoves[i] = agents[i].get_action(oldStates[i])
-
-        
         #perform move and get reward
-        rewards, time, gameOvers = game.play_step(finalMoves)
+        reward, time, gameOver, score = game.play_step(finalMove)
 
-        for i in range(0,4):
-            if game.players[i].alive == True:
-                newStates[i] = agents[i].get_state(game,i)
+        newState = agent.get_state(game)
 
-                #train short memory
-                agents[i].train_short_memory(oldStates[i], finalMoves[i], rewards[i], newStates[i], gameOvers[i])
+        #train short memory
+        agent.train_short_memory(oldState, finalMove, reward, newState, gameOver)
 
-                #remember
-                agents[i].remember(oldStates[i], finalMoves[i], rewards[i], newStates[i], gameOvers[i])
+        #remember
+        agent.remember(oldState, finalMove, reward, newState, gameOver)
 
-        if gameOvers[0] and gameOvers[1] and gameOvers[2] and gameOvers[3]:
+        if gameOver:
             #train long memory, plot results
             game.reset()
             n_games += 1
-            for i in range(0,4):
-                agents[i].n_games += 1
-                agents[i].train_long_memory()
+            agent.train_long_memory()
+
+            if score >= scoreRecord:
+                scoreRecord = score
+                agent.model.save()
 
             if time > timeRecord:
                 timeRecord = time
-                for i in range(0,4):
-                    agents[i].model.save(i)
 
-            print('Game ',n_games, 'Time: ', time, 'TimeRecord: ', timeRecord)
+            print('Game ',n_games, 'Time: ', time, 'TimeRecord: ', timeRecord, 'Score: ', score)
 
-            # plot_scores.append(time)
-            # total_score += time
-            # mean_score = total_score / n_games
-            # plot_mean_scores.append(mean_score)
+            plot_scores.append(score)
+            total_score += score
+            mean_score = total_score / n_games
+            plot_mean_scores.append(mean_score)
             # plot(plot_scores,plot_mean_scores)
 
+    plt.title('Training...')
+    plt.xlabel('Number of games')
+    plt.ylabel('Score')
+    plt.plot(plot_scores)
+    plt.plot(plot_mean_scores)
+    plt.ylim(ymin=0)
+    plt.text(len(plot_scores)-1, plot_scores[-1], str(plot_scores[-1]))
+    plt.text(len(plot_mean_scores)-1, plot_mean_scores[-1], str(plot_mean_scores[-1]))
+    plt.show()
     pygame.quit()
 
 if __name__ == '__main__':
