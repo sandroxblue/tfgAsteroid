@@ -37,7 +37,7 @@ def get_random_position(surface):
 
 
 def get_random_velocity(min_speed, max_speed):
-    speed = random.randint(min_speed, max_speed)
+    speed = random.uniform(min_speed, max_speed)
     angle = random.randrange(0, 360)
     return Vector2(speed, 0).rotate(angle)
 
@@ -70,7 +70,7 @@ def checkOutOfBounds(x0, y0, x1, y1):
         if x1 < 0 and y1 > 0:
             dist = math.sqrt((x0 - a[0])**2 + (y0 - a[1])**2)
             #print(f"choco con el fin del mundo en {a[0]},{a[1]} y yo estoy en {x0},{y0}, dist total= {dist}")
-        if x1 > 0 and y1 < 0:
+        elif x1 > 0 and y1 < 0:
             dist = math.sqrt((x0 - b[0])**2 + (y0 - b[1])**2)
             #print(f"choco con el fin del mundo en {b[0]},{b[1]} y yo estoy en {x0},{y0}, dist total= {dist}")
         else:
@@ -83,7 +83,7 @@ def checkOutOfBounds(x0, y0, x1, y1):
         if x1 > WIDTH and y1 < HEIGHT:
             dist = math.sqrt((x0 - a[0])**2 + (y0 - a[1])**2)
             #print(f"choco con el fin del mundo en {a[0]},{a[1]} y yo estoy en {x0},{y0}, dist total= {dist}")
-        if x1 < WIDTH and y1 > HEIGHT:
+        elif x1 < WIDTH and y1 > HEIGHT:
             dist = math.sqrt((x0 - b[0])**2 + (y0 - b[1])**2)
             #print(f"choco con el fin del mundo en {b[0]},{b[1]} y yo estoy en {x0},{y0}, dist total= {dist}")
         else:
@@ -91,6 +91,44 @@ def checkOutOfBounds(x0, y0, x1, y1):
             distB = math.sqrt((x0 - b[0])**2 + (y0 - b[1])**2)
             dist = min(distA, distB)
     return dist
+
+def getOutOfBounds(x0, y0, x1, y1):
+    dist = MAXDIST
+    a = -1
+    b = -1
+    if x1 < 0 or y1 < 0:
+        a = intersectLines((x0,y0), (x1,y1), (0,0), (0,HEIGHT))
+        b = intersectLines((x0,y0), (x1,y1), (0,0), (WIDTH,0))
+        if x1 < 0 and y1 > 0:
+            dist = math.sqrt((x0 - a[0])**2 + (y0 - a[1])**2)
+            return a[0],a[1],dist
+        elif x1 > 0 and y1 < 0:
+            dist = math.sqrt((x0 - b[0])**2 + (y0 - b[1])**2)
+            return b[0],b[1],dist
+        else:
+            distA = math.sqrt((x0 - a[0])**2 + (y0 - a[1])**2)
+            distB = math.sqrt((x0 - b[0])**2 + (y0 - b[1])**2)
+            dist = min(distA, distB)
+            if distA < distB:
+                return a[0],a[1],dist
+            else: return b[0],b[1],dist
+    if x1 > WIDTH or y1 > HEIGHT:
+        a = intersectLines((x0,y0), (x1,y1), (0,HEIGHT), (WIDTH,HEIGHT))
+        b = intersectLines((x0,y0), (x1,y1), (WIDTH,0), (WIDTH,HEIGHT))
+        if x1 < WIDTH and y1 > HEIGHT:
+            dist = math.sqrt((x0 - a[0])**2 + (y0 - a[1])**2)
+            return a[0],a[1],dist
+        elif x1 > WIDTH and y1 < HEIGHT:
+            dist = math.sqrt((x0 - b[0])**2 + (y0 - b[1])**2)
+            return b[0],b[1],dist
+        else:
+            distA = math.sqrt((x0 - a[0])**2 + (y0 - a[1])**2)
+            distB = math.sqrt((x0 - b[0])**2 + (y0 - b[1])**2)
+            dist = min(distA, distB)
+            if distA < distB:
+                return a[0],a[1],dist
+            else: return b[0],b[1],dist
+    return a,b,dist
 
 class GameObject:
     def __init__(self, position, sprite, velocity):

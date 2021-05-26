@@ -5,7 +5,7 @@ from asteroide import Asteroid
 from utiles import get_random_position, load_sprite, WIDTH, HEIGHT
 
 class AsteroidAI:
-    MIN_ASTEROID_DISTANCE = 250
+    MIN_ASTEROID_DISTANCE = 300
 
     def __init__(self, w= WIDTH, h=HEIGHT):
         pygame.init()

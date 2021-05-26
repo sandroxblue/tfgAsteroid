@@ -10,9 +10,9 @@ from model import Linear_QNet, QTrainer
 #el agente es el que juega al juego y aprende y tal
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LR = 0.01
-N_RANDOM_GAMES = 65
-RANDOM_PROB = 70
+LR = 0.003
+N_RANDOM_GAMES = 80
+RANDOM_PROB = 100
 
 class Agent:
 
@@ -21,7 +21,7 @@ class Agent:
         self.epsilon = 0 #random
         self.gamma = 0.75 #discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() cuando se llena la memoria
-        self.model = Linear_QNet(15 * 3, 10, 15, 5)
+        self.model = Linear_QNet(15 * 3, 15, 15, 5)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -75,6 +75,18 @@ def train():
             if event.type == pygame.QUIT:
                 run = False
 
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            plt.title('Training...')
+            plt.xlabel('Number of games')
+            plt.ylabel('Score')
+            plt.plot(plot_scores)
+            plt.plot(plot_mean_scores)
+            plt.ylim(ymin=0)
+            plt.text(len(plot_scores)-1, plot_scores[-1], str(plot_scores[-1]))
+            plt.text(len(plot_mean_scores)-1, plot_mean_scores[-1], str(plot_mean_scores[-1]))
+            plt.show()
+            
         oldState = agent.get_state(game)
         #get move
         finalMove = agent.get_action(oldState)

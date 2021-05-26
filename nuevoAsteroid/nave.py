@@ -2,7 +2,7 @@ import numpy as np
 from pygame.draw import line
 from pygame.math import Vector2
 from pygame.transform import rotozoom
-from utiles import load_sound, load_sprite, GameObject, lineRect, checkOutOfBounds, MAXDIST
+from utiles import load_sound, load_sprite, GameObject, lineRect, checkOutOfBounds, getOutOfBounds, HEIGHT, WIDTH, MAXDIST
 from bala import Bullet
 
 UP = Vector2(0, -1)
@@ -35,7 +35,11 @@ class Spaceship(GameObject):
         blit_position = self.position - rotated_surface_size * 0.5
         surface.blit(rotated_surface, blit_position)
         # for linea in self.lidar:
-        #     line(surface, (255,255,255), self.position, linea)
+        #     if len(linea) == 2:
+        #         line(surface, (255,255,255), self.position, linea)
+        #     else:
+        #         line(surface, (255,255,255), self.position, linea[0])
+        #         line(surface, (255,255,255), linea[1], linea[2])
 
     def shoot(self):
         bullet_velocity = self.direction * self.BULLET_SPEED + self.velocity
@@ -66,9 +70,22 @@ class Spaceship(GameObject):
         for i in range(1,16):
             angle = 360/15
             rotated_direction = direction.rotate(angle * i)
-            lidar.append(self.position + rotated_direction * MAXDIST)
+            x0, y0 = self.position
+            x1, y1 = self.position + rotated_direction * MAXDIST
+            a,b,distancia = getOutOfBounds(x0,y0,x1,y1)
+            if distancia < MAXDIST:
+                distanciaExtra = MAXDIST - distancia
+                if a <= 0: c = WIDTH
+                elif a >= WIDTH: c = 0
+                else: c = a
+                if b <= 0: d = HEIGHT
+                elif b >= HEIGHT: d = 0
+                else: d = b
+                x1, y1 = Vector2(c,d) + rotated_direction * distanciaExtra
+                lidar.append((Vector2(a,b), Vector2(c,d), Vector2(x1, y1)))
+            else:
+                lidar.append(self.position + rotated_direction * MAXDIST)
         return lidar
-
 
     def checkRadar(self, asteroids, bullets):
         self.lidar = self.actualizarLidar()
@@ -76,28 +93,129 @@ class Spaceship(GameObject):
         x0, y0 = self.position - Vector2(self.radius)
         for linea in self.lidar:
             encontradoFin = [1,1,1] #[finmapa,asteroide, nave]
-            x1, y1 = linea
-            distancia = checkOutOfBounds(x0,y0,x1,y1)
-            if distancia < MAXDIST:
-                encontradoFin[0] = distancia/MAXDIST
-            for a in asteroids:
-                centerx, centery = a.position.xy
-                pt1x, pt1y = (centerx - self.radius, centery - self.radius)
-                pt2x, pt2y = (centerx - self.radius, centery + self.radius)
-                pt3x, pt3y = (centerx + self.radius, centery + self.radius)
-                pt4x, pt4y = (centerx + self.radius, centery - self.radius)
-                if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
-                    distance = self.position.distance_to(a.position) - self.radius - a.radius
-                    encontradoFin[1] = distance/MAXDIST
-
-            for b in bullets:
-                centerx, centery = b.position.xy
-                pt1x, pt1y = (centerx - self.radius, centery - self.radius)
-                pt2x, pt2y = (centerx - self.radius, centery + self.radius)
-                pt3x, pt3y = (centerx + self.radius, centery + self.radius)
-                pt4x, pt4y = (centerx + self.radius, centery - self.radius)
-                if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
-                    distance = self.position.distance_to(b.position) - self.radius - b.radius
-                    encontradoFin[2] = distance/MAXDIST
-            detectados.extend(encontradoFin)
+            if len(linea) == 3:
+                puntoCorte = linea[0]
+                puntoSalida = linea[1]
+                puntoFin = linea[2]
+                distanceToEnd = self.position.distance_to(puntoCorte) - self.radius
+                encontradoFin[0] = distanceToEnd/MAXDIST
+                for a in asteroids:
+                    centerx, centery = a.position.xy
+                    minDistance = MAXDIST
+                    pt1x, pt1y = (centerx - self.radius, centery - self.radius)
+                    pt2x, pt2y = (centerx - self.radius, centery + self.radius)
+                    pt3x, pt3y = (centerx + self.radius, centery + self.radius)
+                    pt4x, pt4y = (centerx + self.radius, centery - self.radius)
+                    x1, y1 = puntoCorte
+                    x2, y2 = puntoSalida
+                    x3, y3 = puntoFin
+                    if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+                        distance = self.position.distance_to(a.position) - self.radius - a.radius
+                        if distance < minDistance:
+                            minDistance = distance
+                            encontradoFin[1] = minDistance/MAXDIST
+                    if lineRect(x2, y2, x3, y3, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+                        distance = self.position.distance_to(a.position) - a.radius + distanceToEnd
+                        if distance < minDistance:
+                            minDistance = distance
+                            encontradoFin[1] = minDistance/MAXDIST
+                for b in bullets:
+                    centerx, centery = b.position.xy
+                    minDistance = MAXDIST
+                    pt1x, pt1y = (centerx - self.radius, centery - self.radius)
+                    pt2x, pt2y = (centerx - self.radius, centery + self.radius)
+                    pt3x, pt3y = (centerx + self.radius, centery + self.radius)
+                    pt4x, pt4y = (centerx + self.radius, centery - self.radius)
+                    x1, y1 = puntoCorte
+                    x2, y2 = puntoSalida
+                    x3, y3 = puntoFin
+                    if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+                        distance = self.position.distance_to(b.position) - self.radius - b.radius
+                        if distance < minDistance:
+                            minDistance = distance
+                            encontradoFin[2] = minDistance/MAXDIST
+                    if lineRect(x2, y2, x3, y3, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+                        distance = self.position.distance_to(b.position) - b.radius + distanceToEnd
+                        if distance < minDistance:
+                            minDistance = distance
+                            encontradoFin[2] = minDistance/MAXDIST
+                detectados.extend(encontradoFin)
+            else:
+                x1, y1 = linea
+                distancia = checkOutOfBounds(x0,y0,x1,y1)
+                if distancia < MAXDIST:
+                    encontradoFin[0] = (distancia - self.radius)/MAXDIST
+                for a in asteroids:
+                    centerx, centery = a.position.xy
+                    minDistance = MAXDIST
+                    pt1x, pt1y = (centerx - self.radius, centery - self.radius)
+                    pt2x, pt2y = (centerx - self.radius, centery + self.radius)
+                    pt3x, pt3y = (centerx + self.radius, centery + self.radius)
+                    pt4x, pt4y = (centerx + self.radius, centery - self.radius)
+                    if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+                        distance = self.position.distance_to(a.position) - self.radius - a.radius
+                        if distance < minDistance:
+                            minDistance = distance
+                            encontradoFin[1] = minDistance/MAXDIST
+                for b in bullets:
+                    centerx, centery = b.position.xy
+                    minDistance = MAXDIST
+                    pt1x, pt1y = (centerx - self.radius, centery - self.radius)
+                    pt2x, pt2y = (centerx - self.radius, centery + self.radius)
+                    pt3x, pt3y = (centerx + self.radius, centery + self.radius)
+                    pt4x, pt4y = (centerx + self.radius, centery - self.radius)
+                    if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+                        distance = self.position.distance_to(b.position) - self.radius - b.radius
+                        if distance < minDistance:
+                            minDistance = distance
+                            encontradoFin[2] = minDistance/MAXDIST
+                detectados.extend(encontradoFin)
         return detectados
+
+
+    # def actualizarLidar(self):
+    #     lidar = []
+    #     direction = self.direction
+    #     for i in range(1,16):
+    #         angle = 360/15
+    #         rotated_direction = direction.rotate(angle * i)
+    #         lidar.append(self.position + rotated_direction * MAXDIST)
+    #     return lidar
+
+    # def checkRadar(self, asteroids, bullets):
+    #     self.lidar = self.actualizarLidar()
+    #     detectados = []
+    #     x0, y0 = self.position - Vector2(self.radius)
+    #     for linea in self.lidar:
+    #         encontradoFin = [1,1,1] #[finmapa,asteroide, nave]
+    #         x1, y1 = linea
+    #         distancia = checkOutOfBounds(x0,y0,x1,y1)
+    #         if distancia < MAXDIST:
+    #             encontradoFin[0] = (distancia - self.radius)/MAXDIST
+    #         for a in asteroids:
+    #             centerx, centery = a.position.xy
+    #             minDistance = MAXDIST
+    #             pt1x, pt1y = (centerx - self.radius, centery - self.radius)
+    #             pt2x, pt2y = (centerx - self.radius, centery + self.radius)
+    #             pt3x, pt3y = (centerx + self.radius, centery + self.radius)
+    #             pt4x, pt4y = (centerx + self.radius, centery - self.radius)
+    #             if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+    #                 distance = self.position.distance_to(a.position) - self.radius - a.radius
+    #                 if distance < minDistance:
+    #                     minDistance = distance
+    #                     encontradoFin[1] = minDistance/MAXDIST
+
+    #         for b in bullets:
+    #             centerx, centery = b.position.xy
+    #             minDistance = MAXDIST
+    #             pt1x, pt1y = (centerx - self.radius, centery - self.radius)
+    #             pt2x, pt2y = (centerx - self.radius, centery + self.radius)
+    #             pt3x, pt3y = (centerx + self.radius, centery + self.radius)
+    #             pt4x, pt4y = (centerx + self.radius, centery - self.radius)
+    #             if lineRect(x0, y0, x1, y1, pt1x, pt1y, pt2x, pt2y, pt3x, pt3y, pt4x, pt4y):
+    #                 distance = self.position.distance_to(b.position) - self.radius - b.radius
+    #                 if distance < minDistance:
+    #                     minDistance = distance
+    #                     encontradoFin[2] = minDistance/MAXDIST
+    #         detectados.extend(encontradoFin)
+    #     return detectados
