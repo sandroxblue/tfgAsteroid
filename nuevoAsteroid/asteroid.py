@@ -53,7 +53,7 @@ class AsteroidAI:
             if player.alive:
                 for asteroid in self.asteroids:
                     if asteroid.collides_with(player):
-                        self.reward = -10
+                        self.reward = -1000
                         player.alive = False
                         break
 
@@ -62,7 +62,7 @@ class AsteroidAI:
                 if asteroid.collides_with(bullet):
                     self.asteroids.remove(asteroid)
                     self.bullets.remove(bullet)
-                    self.reward += 10
+                    self.reward += 1000
                     self.score += 1
                     asteroid.split()
                     break
@@ -101,7 +101,7 @@ class AsteroidAI:
                 self.time = self.timer.get_time()
         if not self.asteroids and nDead < len(self.players):
             self.gameOver = True
-            self.reward = 100
+            self.reward = 10000
             self.timer.tick()
             self.time = self.timer.get_time()
 
