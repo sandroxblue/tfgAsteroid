@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.nn.modules.activation import ReLU
 import torch.optim as optim
 import torch.nn.functional as f
 import os
@@ -7,15 +8,16 @@ import os
 class Linear_QNet(nn.Module):
     def __init__(self, input_size, hidden1_size, hidden2_size, output_size):
         super().__init__()
-        self.linear1 = nn.Linear(input_size, hidden1_size)
-        self.linear2 = nn.Linear(hidden1_size, hidden2_size)
-        self.linear3 = nn.Linear(hidden2_size, output_size)
+        self.layers = nn.Sequential(
+            nn.Linear(input_size, hidden1_size),
+            nn.ReLU(),
+            nn.Linear(hidden1_size, hidden2_size),
+            nn.ReLU(),
+            nn.Linear(hidden2_size, output_size)
+        )
 
     def forward(self, x):
-        x = f.relu(self.linear1(x))
-        x = f.relu(self.linear2(x))
-        x = f.softmax(self.linear3(x))
-        return x
+        return self.layers(x)
 
     def save(self):
         file_name='model.pth'

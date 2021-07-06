@@ -1,5 +1,5 @@
 #Tercera versión de Asteroids V1. Tiene todas las mismas mecánicas que en la primera versión pero se le ha añadido el lídar y las balas son más grandes.
-#Además, es posible pasar de un lado a otro del mapa atravesando los bordes.
+#Además, es posible pasar de un lado a otro del mapa atravesando los bordes. Versión de pruebas.
 
 import pygame
 import random

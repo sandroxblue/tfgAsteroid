@@ -193,19 +193,22 @@ class Barricade(object):
 def redrawGameScreen():
     gameover = False
     screen.blit(bg, (0,0))
+    ganador = 0
     for p in playersAlive:
-        p.draw(screen)
+        if p not in deadPlayers:
+            ganador = p.number
+            p.draw(screen)
     for b in playerBullets:
         b.draw(screen)
     for a in asteroids:
         a.draw(screen)
     for b in barricades:
         b.draw(screen)
-    if len(playersAlive) < 2:
+    if len(deadPlayers) >= 3:
         gameover = True
-        if len(playersAlive) == 1:
-            text = my_font.render(f'Ha ganado el jugador {playersAlive[0].number}',False,WHITE)
-        if len(playersAlive) == 0:
+        if len(deadPlayers) == 3:
+            text = my_font.render(f'Ha ganado el jugador {ganador}',False,WHITE)
+        if len(deadPlayers) == 0:
             text = my_font.render(f'Empate!',False,WHITE)
         screen.blit(text,(WIDTH//2  - 150,50))
     pygame.display.update() 
@@ -249,23 +252,24 @@ while run:
                 asteroids.append(Asteroid(ran))
 
         for p in playersAlive:
-            if (p.checkOffScreen()):
-                deadPlayers.append(p)
-                playersAlive.pop(playersAlive.index(p))
+            if p not in deadPlayers:
+                if (p.checkOffScreen()):
+                    if p not in deadPlayers:
+                        deadPlayers.append(p)
             
             for b in playerBullets:
                 if b.x >= p.x and b.x <= p.x + p.w or b.x + b.w >= p.x and b.x + b.w <= p.x + p.w:
                     if b.y >= p.y and b.y <= p.y + p.h or b.y + b.h >= p.y and b.y + b.h <= p.y + p.h:
                         if b.number != p.number:
-                            deadPlayers.append(p)
-                            playersAlive.pop(playersAlive.index(p))
+                            if p not in deadPlayers:
+                                deadPlayers.append(p)
                             playerBullets.pop(playerBullets.index(b))
 
             for a in asteroids:
                 if p.x >= a.x and p.x <= a.x + a.w or p.x + p.w >= a.x and p.x + p.w <= a.x + a.w:
                     if p.y >= a.y and p.y <= a.y + a.h or p.y + p.h >= a.y and p.y + p.h <= a.y + a.h:
-                        deadPlayers.append(p)
-                        playersAlive.pop(playersAlive.index(p))
+                        if p not in deadPlayers:
+                            deadPlayers.append(p)
 
         for b in playerBullets:
             b.move()
@@ -291,10 +295,11 @@ while run:
                         playerBullets.pop(playerBullets.index(b))
 
             for p in playersAlive:
-                if p.x >= cc.x and p.x <= cc.x + cc.w or p.x + p.w >= cc.x and p.x + p.w <= cc.x + cc.w:
-                    if p.y >= cc.y and p.y <= cc.y + cc.h or p.y + p.h >= cc.y and p.y + p.h <= cc.y + cc.h:
-                        deadPlayers.append(p)
-                        playersAlive.pop(playersAlive.index(p))
+                if p not in deadPlayers:
+                    if p.x >= cc.x and p.x <= cc.x + cc.w or p.x + p.w >= cc.x and p.x + p.w <= cc.x + cc.w:
+                        if p.y >= cc.y and p.y <= cc.y + cc.h or p.y + p.h >= cc.y and p.y + p.h <= cc.y + cc.h:
+                            if p not in deadPlayers:
+                                deadPlayers.append(p)
 
             for a in asteroids:
                 if a.x >= cc.x and a.x <= cc.x + cc.w or a.x + a.w >= cc.x and a.x + a.w <= cc.x + cc.w:
@@ -327,26 +332,27 @@ while run:
         if keys[pygame.K_w]:
             playersAlive[0].moveForward()
         
-        
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e:
                     if not gameover:
-                        playerBullets.append(playersAlive[0].shoot())
+                        if playersAlive[0] not in deadPlayers:
+                            playerBullets.append(playersAlive[0].shoot())
                 if event.key == pygame.K_y:
                     if not gameover:
-                        playerBullets.append(playersAlive[1].shoot())
+                        if playersAlive[1] not in deadPlayers:
+                            playerBullets.append(playersAlive[1].shoot())
                 if event.key == pygame.K_o:
                     if not gameover:
-                        playerBullets.append(playersAlive[2].shoot())
+                        if playersAlive[2] not in deadPlayers:
+                            playerBullets.append(playersAlive[2].shoot())
                 if event.key == pygame.K_RSHIFT:
                     if not gameover:
-                        playerBullets.append(playersAlive[3].shoot())
+                        if playersAlive[3] not in deadPlayers:
+                            playerBullets.append(playersAlive[3].shoot())
         
-    
         gameover = redrawGameScreen()
     
     else:

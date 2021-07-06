@@ -1,4 +1,4 @@
-#Segunda versión de Asteroids V1. Tiene todas las mismas mecánicas que en la primera versión pero se le ha añadido el lídar y las balas son más grandes.
+#Segunda versión de Asteroids V1. Tiene todas las mismas mecánicas que en la primera versión pero se le ha añadido el lídar y las balas son más grandes. Versión de pruebas.
 
 import pygame
 import random
