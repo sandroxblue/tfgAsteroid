@@ -3,16 +3,16 @@ import random
 import numpy as np
 import pygame
 from collections import deque
-from asteroidsTraining import AsteroidAI
+from asteroidsV1Training import AsteroidAI
 from model import Linear_QNet, QTrainer
 from helper import plot
 
-#el agente es el que juega al juego y aprende y tal
+#el agente es el que juega al juego y aprende
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
-N_RANDOM_GAMES = 380
-RANDOM_PROB = 400
+N_RANDOM_GAMES = 80
+RANDOM_PROB = 100
 
 class Agent:
 
@@ -82,6 +82,9 @@ def train():
             if event.type == pygame.QUIT:
                 run = False
 
+        if n_games == 500:
+            run = False
+
         oldStates = [None,None,None,None]
         finalMoves = [None,None,None,None]
         newStates = [None,None,None,None]
@@ -94,7 +97,6 @@ def train():
                 #get move
                 finalMoves[i] = agents[i].get_action(oldStates[i])
 
-        
         #perform move and get reward
         rewards, time, gameOvers = game.play_step(finalMoves)
 
@@ -121,13 +123,13 @@ def train():
                 for i in range(0,4):
                     agents[i].model.save(i)
 
-            print('Game ',n_games, 'Time: ', time, 'TimeRecord: ', timeRecord)
-
             # plot_scores.append(time)
-            # total_score += time
-            # mean_score = total_score / n_games
+            total_score += time
+            mean_score = total_score / n_games
             # plot_mean_scores.append(mean_score)
             # plot(plot_scores,plot_mean_scores)
+
+            print('Game ',n_games, 'Time: ', time, 'TimeRecord: ', timeRecord, 'MeanTime: ', mean_score)
 
     pygame.quit()
 

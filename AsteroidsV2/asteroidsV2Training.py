@@ -1,3 +1,5 @@
+#Asteroids V2. Versión optimizada para un solo jugador adaptada para ser usada por un agente.
+
 import pygame
 
 from nave import Spaceship
@@ -42,7 +44,7 @@ class AsteroidAI:
         self.reward = 0
         for player in self.players:
             if player.alive:
-                self.reward += player.prepareMove(action)
+                player.prepareMove(action)
                 player.move(self.screen)
                 player.checkRadar(self.asteroids, self.bullets)
 

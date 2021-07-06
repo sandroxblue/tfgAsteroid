@@ -1,3 +1,5 @@
+#Cuarta versión de Asteroids V1. Es la versión adaptada para el uso de agentes inteligentes.
+
 import pygame
 import random
 import math
@@ -65,11 +67,10 @@ class Player(pygame.sprite.Sprite):
         self.cosine = math.cos(math.radians(self.angle + 90))
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
-        self.Q = self.patata + self.dir * 30
-        self.Q = orbit(self.Q, self.patata, 0)
-        self.Q -= self.patata
+        self.centroRadar = vec2(self.rect.centerx,self.rect.centery)
+        self.Q = self.centroRadar + self.dir * 30
+        self.Q = orbit(self.Q, self.centroRadar, 0)
+        self.Q -= self.centroRadar
         self.dir = normalize(self.Q)
         self.lidar = self.actualizarLidar()
         self.last_shoot = -RECHARGE_TIME
@@ -77,9 +78,9 @@ class Player(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.surface, self.rect)
-        self.Q = self.patata + self.dir * MAXDIST
+        self.Q = self.centroRadar + self.dir * MAXDIST
         #for i in self.lidar:
-        #    pygame.draw.line(screen, WHITE, pgConvert(self.patata), pgConvert(i))
+        #    pygame.draw.line(screen, WHITE, pgConvert(self.centroRadar), pgConvert(i))
 
     def actualizarLidar(self):
         lidar = []
@@ -87,7 +88,7 @@ class Player(pygame.sprite.Sprite):
         for i in range(0,7,1):
             lidar.append(orbit(self.Q, self, RADS / 2 - i * RADS/14))
         
-        lidar.append(self.patata + self.dir * MAXDIST)
+        lidar.append(self.centroRadar + self.dir * MAXDIST)
         
         for i in range(6,-1,-1):
             lidar.append(orbit(self.Q, self, -RADS / 2 + i * RADS/14))
@@ -102,11 +103,10 @@ class Player(pygame.sprite.Sprite):
         self.cosine = math.cos(math.radians(self.angle + 90))
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
-        self.Q = self.patata + self.dir * 30
-        self.Q = orbit(self.Q, self.patata, (math.pi / 4) * -NUM)
-        self.Q -= self.patata
+        self.centroRadar = vec2(self.rect.centerx,self.rect.centery)
+        self.Q = self.centroRadar + self.dir * 30
+        self.Q = orbit(self.Q, self.centroRadar, (math.pi / 4) * -NUM)
+        self.Q -= self.centroRadar
         self.dir = normalize(self.Q)
         self.actualizarLidar()
 
@@ -118,11 +118,10 @@ class Player(pygame.sprite.Sprite):
         self.cosine = math.cos(math.radians(self.angle + 90))
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
-        self.Q = self.patata + self.dir * 30
-        self.Q = orbit(self.Q, self.patata, (math.pi / 4) * NUM)
-        self.Q -= self.patata
+        self.centroRadar = vec2(self.rect.centerx,self.rect.centery)
+        self.Q = self.centroRadar + self.dir * 30
+        self.Q = orbit(self.Q, self.centroRadar, (math.pi / 4) * NUM)
+        self.Q -= self.centroRadar
         self.dir = normalize(self.Q)
         self.actualizarLidar()
 
@@ -136,7 +135,7 @@ class Player(pygame.sprite.Sprite):
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
         self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
+        self.centroRadar = vec2(self.rect.centerx,self.rect.centery)
         self.actualizarLidar()
 
     def shoot(self, actual_shoot):
@@ -191,12 +190,10 @@ class Player(pygame.sprite.Sprite):
     def checkRadar(self,players,asteroids,bullets,barricades):
         self.lidar = self.actualizarLidar()
         detectados = []
-        j = 0
         for i in self.lidar:
-            j += 1
             encontradoFin = [0,0,0,0,0] #[finMapa, nave, asteroide, bala, barricada]
             distanciaFin = MAXDIST
-            x0, y0 = self.patata
+            x0, y0 = self.centroRadar
             x1, y1 = i
             distancia = checkOutOfBounds(x0,y0,x1,y1)
             if distancia < distanciaFin:
@@ -425,8 +422,6 @@ def lineRect(x1, y1, x2, y2, rx1, ry1, rx2, ry2, rx3, ry3, rx4, ry4):
     else:
         return False
 
-
-
 def lineLine(x1, y1, x2, y2, x3, y3, x4, y4):
     if ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) != 0:
         uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
@@ -521,7 +516,7 @@ class AsteroidAI:
         self.count += 1
         if self.count % self.ticksForAsteroid == 0:
             if len(self.asteroids) < self.maxAsteroids:
-                ran = random.choice([1,1,1,1,2,2,3])
+                ran = random.choice([1,1,1,1,1,2,2,2,3,3])
                 self.asteroids.append(Asteroid(ran))
 
         for p in self.players:
@@ -584,19 +579,7 @@ class AsteroidAI:
 # asteroid = AsteroidAI()
 # while asteroid.run: 
 
-#     keys = pygame.key.get_pressed()
-#     if keys[pygame.K_a]:
-#         asteroid.play_step([0,0,1,0,0])
-#     elif keys[pygame.K_d]:
-#         asteroid.play_step([0,0,0,1,0])
-#     elif keys[pygame.K_w]:
-#         asteroid.play_step([0,1,0,0,0])
-#     elif keys[pygame.K_SPACE]:
-#         asteroid.play_step([0,0,0,0,1])
-#     else: asteroid.play_step([0,0,0,0,1])
-
-#     if asteroid.gameover:
-#         asteroid.reset()
+#     asteroid.play_step([[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0]])
 
 #     for event in pygame.event.get():
 #         if event.type == pygame.QUIT:

@@ -4,13 +4,13 @@ import numpy as np
 import pygame
 import matplotlib.pyplot as plt
 from collections import deque
-from asteroid import AsteroidAI
+from asteroidsV2Training import AsteroidAI
 from model import Linear_QNet, QTrainer
 
 #el agente es el que juega al juego y aprende y tal
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LR = 0.003
+LR = 0.03
 N_RANDOM_GAMES = 80
 RANDOM_PROB = 100
 
@@ -21,7 +21,7 @@ class Agent:
         self.epsilon = 0 #random
         self.gamma = 0.75 #discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() cuando se llena la memoria
-        self.model = Linear_QNet(15 * 3, 15, 15, 5)
+        self.model = Linear_QNet(15 * 3, 5, 5, 5)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -74,6 +74,9 @@ def train():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+
+        if n_games == 500:
+            run = False
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:

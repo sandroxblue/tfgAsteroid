@@ -50,19 +50,15 @@ class Spaceship(GameObject):
     def prepareMove(self, action):
         ##[nada, izq, der, recto, disparar]
         if np.array_equal(action, [1,0,0,0,0]):
-            return 0
+            pass
         elif np.array_equal(action, [0,1,0,0,0]):
             self.accelerate()
-            return 0.1
         elif np.array_equal(action, [0,0,1,0,0]):
             self.rotate(False)
-            return 0.05
         elif np.array_equal(action, [0,0,0,1,0]):
             self.rotate(True)
-            return 0.05
         elif np.array_equal(action, [0,0,0,0,1]):
             self.shoot()
-            return 0.1
 
     def actualizarLidar(self):
         lidar = []

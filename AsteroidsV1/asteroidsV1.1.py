@@ -1,3 +1,5 @@
+#Segunda versión de Asteroids V1. Tiene todas las mismas mecánicas que en la primera versión pero se le ha añadido el lídar y las balas son más grandes.
+
 import pygame
 import random
 import math
@@ -18,8 +20,8 @@ MAXDIST = 300
 RADS = math.radians(45)
 NUM = 1/9
 
-bg = pygame.image.load('fondo.png')
-barricada = pygame.image.load('barricada.png')
+bg = pygame.image.load('sprites/fondo.png')
+barricada = pygame.image.load('sprites/barricada.png')
 my_font = pygame.font.SysFont('Comic Sans MS',30)
 
 pygame.display.set_caption('Asteroids')
@@ -33,7 +35,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self,number):
         super().__init__()
         self.number = number
-        self.img = pygame.image.load("nave" + self.number + ".png")
+        self.img = pygame.image.load("sprites/nave" + self.number + ".png")
         self.w = self.img.get_width()
         self.h = self.img.get_height()
         if number == '1':
@@ -63,10 +65,10 @@ class Player(pygame.sprite.Sprite):
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
         self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
-        self.Q = self.patata + self.dir * 30
-        self.Q = orbit(self.Q, self.patata, 0)
-        self.Q -= self.patata
+        self.face = vec2(self.rect.centerx,self.rect.centery)
+        self.Q = self.face + self.dir * 30
+        self.Q = orbit(self.Q, self.face, 0)
+        self.Q -= self.face
         self.dir = normalize(self.Q)
         self.lidar = self.actualizarLidar()
 
@@ -76,17 +78,17 @@ class Player(pygame.sprite.Sprite):
         #screen.blit(self.radar.surface,self.radar.rect)
 
         # Rotate facing direction
-        #self.Q = self.patata + self.dir * 30
-        #self.Q = orbit(Q, self.patata, (math.pi / 4) * 0.01)
-        #self.Q -= self.patata
+        #self.Q = self.face + self.dir * 30
+        #self.Q = orbit(Q, self.face, (math.pi / 4) * 0.01)
+        #self.Q -= self.face
         #self.dir = normalize(Q)
         
 
         # Draw geometry
-        self.Q = self.patata + self.dir * MAXDIST
+        self.Q = self.face + self.dir * MAXDIST
         
         for i in self.lidar:
-            pygame.draw.line(screen, WHITE, pgConvert(self.patata), pgConvert(i))
+            pygame.draw.line(screen, WHITE, pgConvert(self.face), pgConvert(i))
 
         #wpygame.draw.circle(screen, WHITE, pgConvert(self.cabeza), 4)
 
@@ -96,7 +98,7 @@ class Player(pygame.sprite.Sprite):
         for i in range(0,7,1):
             lidar.append(orbit(self.Q, self, RADS / 2 - i * RADS/14))
         
-        lidar.append(self.patata + self.dir * MAXDIST)
+        lidar.append(self.face + self.dir * MAXDIST)
         
         for i in range(6,-1,-1):
             lidar.append(orbit(self.Q, self, -RADS / 2 + i * RADS/14))
@@ -112,10 +114,10 @@ class Player(pygame.sprite.Sprite):
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
         self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
-        self.Q = self.patata + self.dir * 30
-        self.Q = orbit(self.Q, self.patata, (math.pi / 4) * -NUM)
-        self.Q -= self.patata
+        self.face = vec2(self.rect.centerx,self.rect.centery)
+        self.Q = self.face + self.dir * 30
+        self.Q = orbit(self.Q, self.face, (math.pi / 4) * -NUM)
+        self.Q -= self.face
         self.dir = normalize(self.Q)
         self.actualizarLidar()
 
@@ -128,10 +130,10 @@ class Player(pygame.sprite.Sprite):
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
         self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
-        self.Q = self.patata + self.dir * 30
-        self.Q = orbit(self.Q, self.patata, (math.pi / 4) * NUM)
-        self.Q -= self.patata
+        self.face = vec2(self.rect.centerx,self.rect.centery)
+        self.Q = self.face + self.dir * 30
+        self.Q = orbit(self.Q, self.face, (math.pi / 4) * NUM)
+        self.Q -= self.face
         self.dir = normalize(self.Q)
         self.actualizarLidar()
 
@@ -145,7 +147,7 @@ class Player(pygame.sprite.Sprite):
         self.sine = math.sin(math.radians(self.angle + 90))
         self.head = (self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
         self.cabeza = vec2(self.x + self.cosine * self.w//2, self.y - self.sine * self.h//2)
-        self.patata = vec2(self.rect.centerx,self.rect.centery)
+        self.face = vec2(self.rect.centerx,self.rect.centery)
         self.actualizarLidar()
 
     def shoot(self):
@@ -166,7 +168,7 @@ class Player(pygame.sprite.Sprite):
             j += 1
             encontradoFin = ""
             distanciaFin = 500
-            x0, y0 = self.patata
+            x0, y0 = self.face
             x1, y1 = i
             for p in players:
                 if self.number != p.number:
@@ -297,7 +299,7 @@ class Bullet(object):
 
 class Asteroid(object):
     def __init__(self,rank):
-        self.img = pygame.image.load("meteorito" + str(rank) + ".png")
+        self.img = pygame.image.load("sprites/meteorito" + str(rank) + ".png")
         self.w = self.img.get_width()
         self.h = self.img.get_height()
         self.spawnPoint = random.choice([(random.randrange(0,WIDTH-self.w),random.choice([-1 * self.h - 5, HEIGHT + 5])),(random.choice([-1 * self.w - 5, WIDTH + 5]), random.randrange(0,HEIGHT - self.h))])
@@ -331,7 +333,7 @@ class Asteroid(object):
 class Barricade(object):
     def __init__(self, option):
 
-        self.img = pygame.image.load("barricada.png")
+        self.img = pygame.image.load("sprites/barricada.png")
         self.w = self.img.get_width()
         self.h = self.img.get_height()
 
@@ -444,18 +446,11 @@ while run:
                 ran = random.choice([1,1,1,1,2,2,3])
                 asteroids.append(Asteroid(ran))
 
-
         for p in playersAlive:
             p.checkRadar(playersAlive,asteroids,playerBullets,barricades)
-            if p.x < 0:
-                p.x = WIDTH
-            if p.x > WIDTH + p.w:
-                p.x = 0
-            if p.y < 0:
-                p.y = HEIGHT
-            if p.y > HEIGHT:
-                p.y = 0
-
+            if (p.checkOffScreen()):
+                deadPlayers.append(p)
+                playersAlive.pop(playersAlive.index(p))
             
             for b in playerBullets:
                 if b.x >= p.x and b.x <= p.x + p.w or b.x + b.w >= p.x and b.x + b.w <= p.x + p.w:
@@ -509,10 +504,22 @@ while run:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            playersAlive[1].turnLeft()
+            playersAlive[3].turnLeft()
         if keys[pygame.K_RIGHT]:
-            playersAlive[1].turnRight()
+            playersAlive[3].turnRight()
         if keys[pygame.K_UP]:
+            playersAlive[3].moveForward()
+        if keys[pygame.K_j]:
+            playersAlive[2].turnLeft()
+        if keys[pygame.K_l]:
+            playersAlive[2].turnRight()
+        if keys[pygame.K_i]:
+            playersAlive[2].moveForward()
+        if keys[pygame.K_f]:
+            playersAlive[1].turnLeft()
+        if keys[pygame.K_h]:
+            playersAlive[1].turnRight()
+        if keys[pygame.K_t]:
             playersAlive[1].moveForward()
         if keys[pygame.K_a]:
             playersAlive[0].turnLeft()
@@ -521,16 +528,24 @@ while run:
         if keys[pygame.K_w]:
             playersAlive[0].moveForward()
         
+        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_e:
                     if not gameover:
                         playerBullets.append(playersAlive[0].shoot())
-                if event.key == pygame.K_f:
+                if event.key == pygame.K_y:
                     if not gameover:
                         playerBullets.append(playersAlive[1].shoot())
+                if event.key == pygame.K_o:
+                    if not gameover:
+                        playerBullets.append(playersAlive[2].shoot())
+                if event.key == pygame.K_RSHIFT:
+                    if not gameover:
+                        playerBullets.append(playersAlive[3].shoot())
         
     
         gameover = redrawGameScreen()

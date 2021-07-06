@@ -1,3 +1,5 @@
+#Primera versión de Asteroids V1. Tiene todas las mecánicas definidas y es jugable por 4 jugadores.
+
 import pygame 
 import random
 import math
@@ -14,8 +16,8 @@ RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
 
-bg = pygame.image.load('fondo.png')
-barricada = pygame.image.load('barricada.png')
+bg = pygame.image.load('sprites/fondo.png')
+barricada = pygame.image.load('sprites/barricada.png')
 my_font = pygame.font.SysFont('Comic Sans MS',30)
 
 pygame.display.set_caption('Asteroids')
@@ -28,7 +30,7 @@ gameover = False
 class Player(object):
     def __init__(self,number):
         self.number = number
-        self.img = pygame.image.load("nave" + self.number + ".png")
+        self.img = pygame.image.load("sprites/nave" + self.number + ".png")
         self.w = self.img.get_width()
         self.h = self.img.get_height()
         if number == '1':
@@ -128,7 +130,7 @@ class Bullet(object):
 
 class Asteroid(object):
     def __init__(self,rank):
-        self.img = pygame.image.load("meteorito" + str(rank) + ".png")
+        self.img = pygame.image.load("sprites/meteorito" + str(rank) + ".png")
         self.w = self.img.get_width()
         self.h = self.img.get_height()
         self.spawnPoint = random.choice([(random.randrange(0,WIDTH-self.w),random.choice([-1 * self.h - 5, HEIGHT + 5])),(random.choice([-1 * self.w - 5, WIDTH + 5]), random.randrange(0,HEIGHT - self.h))])
@@ -162,7 +164,7 @@ class Asteroid(object):
 class Barricade(object):
     def __init__(self, option):
 
-        self.img = pygame.image.load("barricada.png")
+        self.img = pygame.image.load("sprites/barricada.png")
         self.w = self.img.get_width()
         self.h = self.img.get_height()
 
@@ -301,10 +303,22 @@ while run:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            playersAlive[1].turnLeft()
+            playersAlive[3].turnLeft()
         if keys[pygame.K_RIGHT]:
-            playersAlive[1].turnRight()
+            playersAlive[3].turnRight()
         if keys[pygame.K_UP]:
+            playersAlive[3].moveForward()
+        if keys[pygame.K_j]:
+            playersAlive[2].turnLeft()
+        if keys[pygame.K_l]:
+            playersAlive[2].turnRight()
+        if keys[pygame.K_i]:
+            playersAlive[2].moveForward()
+        if keys[pygame.K_f]:
+            playersAlive[1].turnLeft()
+        if keys[pygame.K_h]:
+            playersAlive[1].turnRight()
+        if keys[pygame.K_t]:
             playersAlive[1].moveForward()
         if keys[pygame.K_a]:
             playersAlive[0].turnLeft()
@@ -319,12 +333,18 @@ while run:
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_e:
                     if not gameover:
                         playerBullets.append(playersAlive[0].shoot())
-                if event.key == pygame.K_f:
+                if event.key == pygame.K_y:
                     if not gameover:
                         playerBullets.append(playersAlive[1].shoot())
+                if event.key == pygame.K_o:
+                    if not gameover:
+                        playerBullets.append(playersAlive[2].shoot())
+                if event.key == pygame.K_RSHIFT:
+                    if not gameover:
+                        playerBullets.append(playersAlive[3].shoot())
         
     
         gameover = redrawGameScreen()

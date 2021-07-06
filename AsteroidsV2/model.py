@@ -13,21 +13,21 @@ class Linear_QNet(nn.Module):
 
     def forward(self, x):
         x = f.relu(self.linear1(x))
-        x = self.linear2(x)
-        x = self.linear3(x)
+        x = f.relu(self.linear2(x))
+        x = f.softmax(self.linear3(x))
         return x
 
-    def save(self, number):
-        file_name='model' + str(number) + '.pth'
-        model_folder_path = './model'
+    def save(self):
+        file_name='model.pth'
+        model_folder_path = './AsteroidsV2/modelV2'
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.state_dict(), file_name)
 
-    def load(self, number):
-        file_name='model' + str(number) + '.pth'
-        model_folder_path = './model'
+    def load(self):
+        file_name='model.pth'
+        model_folder_path = './AsteroidsV2/modelV2'
         file_name = os.path.join(model_folder_path, file_name)
         torch.load(self.state_dict(), file_name)
 
@@ -36,7 +36,7 @@ class QTrainer:
         self.lr = lr
         self.gamma = gamma
         self.model = model
-        self.optimizer = optim.RMSprop(model.parameters(), lr=self.lr)
+        self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
 
     def train_step(self, state, action, reward, next_state, gameover):
